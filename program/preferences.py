@@ -7,7 +7,7 @@ import pyglet
 pyglet.resource.path = ['program/resources/info','resources/info','program/resources/tiles','resources/tiles']
 from debug import error_log
 import sys
-# TO DO: add better error checking and logging as in graphics.py
+
 
 
 # PARSE prefs.txt AND LOAD THE DICTIONARY OF PREFERENCES
@@ -33,5 +33,5 @@ print(" done.")
 
 
 if __name__ == "__main__":
-    "UNIT TEST CODE"
+    # UNIT TEST CODE
     print(prefs)

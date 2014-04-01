@@ -18,7 +18,7 @@ import sys # to flush the console
 #############################################
 
 def generate_colorized_tile(tilenum,fg_color=b'\xff\xff\xff\xff',bg_color=b'\x00\x00\x00\xff'):
-    "returns a new image by transforming the foreground and background colors of one of the raw (white on black) tiles"
+    """returns a new image by transforming the foreground and background colors of one of the raw (white on black) tiles"""
     rawpic = tileset[tilenum]
     return colorize(rawpic,fg_color,bg_color)
 
@@ -44,15 +44,15 @@ def colorize(image,fg_color,bg_color):
     return pyglet.image.ImageData(image.width,image.height,"RGBA",pixel_out) # generate a new image with the new data
 
 def get_char_tile(tilenum,alphabet):
-    "returns the (character) imagedata for a given ascii code (0 to 255) and alphabet (0=plaintext,1=highlighted)"
+    """returns the (character) imagedata for a given ascii code (0 to 255) and alphabet (0=plaintext,1=highlighted)"""
     return alphabets[alphabet][tilenum]
 
 def get_tile_string(text):
-    "returns a list of tiles for a given string; does not keep track of text wrapping or anything like that"
+    """returns a list of tiles for a given string; does not keep track of text wrapping or anything like that"""
     return [get_char_tile(ord(x)) for x in text]
 
 def generate_sprite_string(text,x,y,batch,alphabet=0):
-    "returns a set of sprites (with position and batch assigned) for a text string; lower-left corner at x,y"
+    """returns a set of sprites (with position and batch assigned) for a text string; lower-left corner at x,y"""
     return [pyglet.sprite.Sprite( get_char_tile(ord(text[i]),alphabet), x=x+(i*tilewidth), y=y, batch=batch) for i in range(len(text))]
 
 
@@ -186,5 +186,5 @@ print(" done.")
 
 
 if __name__ == "__main__":
-    "UNIT TEST CODE"
+    # UNIT TEST CODE
     print(tiles)
