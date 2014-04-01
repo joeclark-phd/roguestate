@@ -1,4 +1,3 @@
-__author__ = 'jwclark2'
 
 # The pyglet library calls itself a lot with "import pyglet".
 # Since I want to package the library with the game (rather

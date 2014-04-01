@@ -1,4 +1,3 @@
-__author__ = 'jwclark2'
 
 import pyglet
 
