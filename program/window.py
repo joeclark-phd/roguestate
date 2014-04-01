@@ -14,3 +14,4 @@ def on_draw():
 
 pyglet.app.run()
 
+# TODO copy stuff from old game
