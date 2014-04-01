@@ -1,15 +1,18 @@
 
 import pyglet
+import tiles
 
 
 testwindow = pyglet.window.Window()
 
-label = pyglet.text.Label('@',x=testwindow.width//2,y=testwindow.height//2)
+
+adventurer = pyglet.sprite.Sprite( tiles.tiles["adventurer"],x=testwindow.width//2,y=testwindow.height//2 )
+
 
 @testwindow.event
 def on_draw():
     testwindow.clear()
-    label.draw()
+    adventurer.draw()
 
 pyglet.app.run()
 

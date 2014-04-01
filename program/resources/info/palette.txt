@@ -1,0 +1,21 @@
+# Defines "named colors" for the game (the preferred way to change color schemes). Format:
+#   NAME=RRGGBB or NAME=RRGGBBAA (if you want to specify alpha; default is FF, no transparency)
+
+
+# defaults
+fg = ffffff
+bg = 000000
+no_bg = 00000000  # a transparent background
+
+# text/font colors
+plaintext = ffffff
+highlight = ffbb00
+
+# terrain colors
+darkgrass = 668822
+lightgrass = 99cc33
+
+# plant colors
+indigo = 440088
+gold = ffdd00
+black = 999999

@@ -1,0 +1,24 @@
+# Tile and colors for each image in the game. Format:
+#   IMAGE_ID=TILE_NUMBER:FOREGROUND_COLOR:BACKGROUND_COLOR
+# Where IMAGE_ID corresponds to the thing or critter or terrain data,
+#   TILE_NUMBER corresponds to a position in the image grid resource
+#   (left to right, top to bottom), and the COLORs may either refer to
+#   a named color (see palette.txt) or be specified in RGBA format
+#   with two hex digits for each of red, green, blue, and alpha, e.g.
+#   ff0000ff. Whitespace is optional. Empty values will be replaced by
+#   defaults: the "empty" character, foreground white, background black.
+
+
+adventurer = 64 : gold : no_bg
+cursor = 254 : no_bg : highlight
+menucursor = 62 : highlight : bg
+grassland = 255 :  : lightgrass
+shrubbery = 240 : darkgrass : no_bg
+
+
+
+# plants
+indigo bush = 37 : indigo : no_bg
+blackroot = 241 : black :no_bg
+wiggly weed = 240 : darkgrass :no_bg
+goldencorn = 244 : gold :no_bg
