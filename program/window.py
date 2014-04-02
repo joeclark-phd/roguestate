@@ -5,11 +5,21 @@ import pyglet
 from pyglet.window import key
 
 
-class GameWindow( pyglet.window.Window ):
 
-    def __init__( self, gamemode, **kargs ):
+
+
+class GameWindow( pyglet.window.Window ):
+    """
+    Extends the pyglet.window.Window, which opens a window and captures keypresses.
+    Multiple displays or views or game states will be represented by "GameMode" objects, each
+    with its set of sprites and its logic for handling keypress events.  These will be "layered"
+    so that, for example, a dialog box or menu can pop up on top of the map without erasing it.
+    The custom functions below essentially enable a "stack" that captures keypresses from the
+    top down, and draws sprites from the bottom up.
+    """
+
+    def __init__( self, **kargs ):
         self._modes = [] # this variable will hold the "stack" of game input/output modes
-        self.change_bottom_mode( gamemode ) # set up the initial mode
         pyglet.window.Window.__init__( self, **kargs )
 
     def change_bottom_mode( self, gamemode ):
@@ -69,14 +79,22 @@ class GameWindow( pyglet.window.Window ):
 
 
 
+
+
 # GAME MODES: Each of these extends the GameMode class and represents a display routine (the draw() method)
 # and some input-output handlers.  GameModes may be stacked (e.g. a menu or dialog can "pop up" over the
 # regular game map/display) or they may be replaced (e.g. when player goes to an info screen).
 
-
 class GameMode():
-    def __init__(self):
+    """
+    GAME MODES: Each of these extends the GameMode class and represents a display routine (the draw() method)
+    and some input-output handlers.  GameModes may be stacked (e.g. a menu or dialog can "pop up" over the
+    regular game map/display) or they may be replaced (e.g. when player goes to an info screen).
+    """
+    def __init__(self, window, game):
         self._batch = pyglet.graphics.Batch()
+        self._window = window
+        self._game = game
     def on_draw(self):
         self._batch.draw()
     def on_key_press(self, symbol, modifiers):
@@ -86,17 +104,17 @@ class GameMode():
 
 class SplashScreen(GameMode):
     # will display splash screen and proceed to menu on any key press
-    def __init__(self):
-        GameMode.__init__(self)
+    def __init__(self, *args):
+        GameMode.__init__(self, *args)
         self._splashtiles = tiles.generate_sprite_string("welcome to Rogue State University",20,200,self._batch,alphabet=1)
     def on_key_press(self,symbol,modifiers):
-        gwindow.change_bottom_mode(MainMenu())
+        self._window.change_bottom_mode(MainMenu(self._window,self._game))
 
 
 class MainMenu(GameMode):
     # will display main menu
-    def __init__(self):
-        GameMode.__init__(self)
+    def __init__(self, *args):
+        GameMode.__init__(self, *args)
         self._menu = widgets.GraphicalMenu("new game","highscores","quit",xcenter=gwindow.width//2,ycenter=gwindow.height//2)
     def on_key_press(self,symbol,modifiers):
         if symbol in { key.UP, key.NUM_8 }:
@@ -108,7 +126,7 @@ class MainMenu(GameMode):
         if symbol == key.ENTER:
             if self._menu.selection == 0:
                 print("starting new game.")
-                gwindow.change_bottom_mode(MapInterface())
+                self._window.change_bottom_mode(MapInterface(self._window,self._game))
             if self._menu.selection == 1:
                 print("viewing high scores.")
             if self._menu.selection == 2:
@@ -121,14 +139,14 @@ class MainMenu(GameMode):
 
 class MapInterface(GameMode):
     # will display main game interface
-    def __init__(self):
-        GameMode.__init__(self)
+    def __init__(self, *args):
+        GameMode.__init__(self, *args)
         self._adventurer = pyglet.sprite.Sprite( tiles.tiles["adventurer"],x=gwindow.width//2,y=gwindow.height//2 )
 
     def on_key_press(self,symbol,modifiers):
         if symbol == key.ESCAPE:
             print("showing ESC menu.")
-            gwindow.push_mode(ESCMenu())
+            self._window.push_mode(ESCMenu(self._window,self._game))
         if symbol == key.TAB:
             print("showing look cursor.")
         # catch directional controls
@@ -146,13 +164,13 @@ class MapInterface(GameMode):
 
 class ESCMenu(GameMode):
     # will display ESC menu
-    def __init__(self):
-        GameMode.__init__(self)
+    def __init__(self, *args):
+        GameMode.__init__(self, *args)
         self._menu = widgets.GraphicalMenu("never mind","quit",xcenter=gwindow.width//2,ycenter=gwindow.height//2)
     def on_key_press(self,symbol,modifiers):
         if symbol == key.ESCAPE:
             print("closing ESC menu.")
-            gwindow.pop_mode()
+            self._window.pop_mode()
             return True
         if symbol in { key.UP, key.NUM_8 }:
             self._menu.option_up()
@@ -163,7 +181,7 @@ class ESCMenu(GameMode):
         if symbol == key.ENTER:
             if self._menu.selection == 0:
                 print("closing ESC menu.")
-                gwindow.pop_mode()
+                self._window.pop_mode()
             if self._menu.selection == 1:
                 print("exiting game.")
                 pyglet.app.exit()
@@ -179,7 +197,10 @@ class ESCMenu(GameMode):
 
 # FOR CONVENIENCE
 # a dictionary of direction keys and their correspondent vertical/horizontal components
-direction_keys = { key.RIGHT:(0,1), key.NUM_6:(0,1), key.PAGEUP:(1,1), key.NUM_9:(1,1), key.UP:(1,0), key.NUM_8:(1,0), key.HOME:(1,-1), key.NUM_7:(1,-1), key.LEFT:(0,-1), key.NUM_4:(0,-1), key.END:(-1,-1), key.NUM_1:(-1,-1),key.DOWN:(-1,0), key.NUM_2:(-1,0), key.PAGEDOWN:(-1,1), key.NUM_3:(-1,1) }
+direction_keys = { key.RIGHT:(0,1), key.NUM_6:(0,1), key.PAGEUP:(1,1), key.NUM_9:(1,1), key.UP:(1,0),
+                   key.NUM_8:(1,0), key.HOME:(1,-1), key.NUM_7:(1,-1), key.LEFT:(0,-1), key.NUM_4:(0,-1),
+                   key.END:(-1,-1), key.NUM_1:(-1,-1),key.DOWN:(-1,0), key.NUM_2:(-1,0), key.PAGEDOWN:(-1,1),
+                   key.NUM_3:(-1,1) }
 
 
 
@@ -191,9 +212,8 @@ direction_keys = { key.RIGHT:(0,1), key.NUM_6:(0,1), key.PAGEUP:(1,1), key.NUM_9
 # INITIALIZE THE PROGRAM
 
 dims = (70 * tiles.tilewidth, 35 * tiles.tileheight)
-gdata = None # the GameData object will be attached here
-
-gwindow = GameWindow( SplashScreen(), width=dims[0], height=dims[1], resizable=True )  # open the window
-
+gdata = "placeholder"  # the GameData object will be attached here
+gwindow = GameWindow( width=dims[0], height=dims[1], resizable=True )  # open the window
+gwindow.change_bottom_mode( SplashScreen(gwindow,gdata) )  # launch the splash screen
 
 pyglet.app.run()
