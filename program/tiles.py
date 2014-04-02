@@ -45,7 +45,7 @@ def colorize(image,fg_color,bg_color):
     return pyglet.image.ImageData(image.width,image.height,"RGBA",pixel_out) # generate a new image with the new data
 
 def get_char_tile(tilenum,alphabet):
-    """returns the (character) imagedata for a given ascii code (0 to 255) and alphabet (0=plaintext,1=highlighted)"""
+    """returns the (character) imagedata for a given ascii code (0 to 255) and alphabet (0=plaintext,1=highlighted, 2=inverted)"""
     return alphabets[alphabet][tilenum]
 
 def get_tile_string(text):

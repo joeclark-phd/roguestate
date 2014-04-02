@@ -2,20 +2,33 @@
 #   NAME=RRGGBB or NAME=RRGGBBAA (if you want to specify alpha; default is FF, no transparency)
 
 
-# defaults
-fg = ffffff
-bg = 000000
-no_bg = 00000000  # a transparent background
+########
+# Default foreground, background, and transparent background colors.
+# These three names (fg, bg, no_bg) are expected by the program and may be changed but not deleted.
+########
+
+    fg = ffffffff  # default foreground color
+    bg = 000000ff  # default opaque background color
+    no_bg = 00000000  # a transparent background
+
+
+
+
+########
+# User defined "named" colors. These may be used in tiles.txt to colorize tiles.
+# This would allow you to change the color scheme all at once (e.g., by changing the RGBA mix for "red").
+# It is not *necessary* to use a named palette, but it would be clever to do so.
+########
 
 # text/font colors
-plaintext = ffffff
-highlight = ffbb00
+    plaintext = ffffff
+    highlight = ffbb00
 
 # terrain colors
-darkgrass = 668822
-lightgrass = 99cc33
+    darkgrass = 668822
+    lightgrass = 99cc33
 
 # plant colors
-indigo = 440088
-gold = ffdd00
-black = 999999
+    indigo = 440088
+    gold = ffdd00
+    black = 999999
