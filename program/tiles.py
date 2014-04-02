@@ -5,13 +5,14 @@ specified characters and fg/bg colors.  Reads data from plain-text info files.
 """
 
 import preferences
-import dependencies.pyglet as pyglet
+import pyglet
+
 pyglet.resource.path = ['program/resources/info','resources/info','program/resources/tiles','resources/tiles']
 import re # for regular expressions
 RGBcolor = re.compile("[0-9a-f]{6}")  # regular expression for a 6 digit hexadecimal number
 AAlpha = re.compile("[0-9a-f]{2}")  # for a 2 digit alpha value
 from debug import error_log
-import sys # to flush the console
+import sys  # to print . . . the console
 
 #############################################
 # FUNCTIONS TO BE USED IN GENERATING IMAGES #

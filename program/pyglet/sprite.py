@@ -366,11 +366,11 @@ class Sprite(event.EventDispatcher):
     def _create_vertex_list(self):
         if self._batch is None:
             self._vertex_list = graphics.vertex_list(4,
-                'v2i/%s' % self._usage, 
+                'v2f/%s' % self._usage,
                 'c4B', ('t3f', self._texture.tex_coords))
         else:
             self._vertex_list = self._batch.add(4, GL_QUADS, self._group,
-                'v2i/%s' % self._usage, 
+                'v2f/%s' % self._usage,
                 'c4B', ('t3f', self._texture.tex_coords))
         self._update_position()
         self._update_color()

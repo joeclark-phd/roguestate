@@ -7,8 +7,8 @@
 # repeated in every script.
 import sys
 cwd = sys.path[0] # current working directory
-sys.path.insert(0,cwd + "\program\dependencies")
-# now do the same for my own code in the \program directory
+
+# i can have as many of these as necessary...
 sys.path.insert(0,cwd + "\program")
 
 
