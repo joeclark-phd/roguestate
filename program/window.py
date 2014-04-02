@@ -1,5 +1,5 @@
 
-import pyglet
+import dependencies.pyglet as pyglet
 import tiles
 
 

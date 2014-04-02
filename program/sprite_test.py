@@ -5,7 +5,7 @@
 
 
 
-import pyglet
+import dependencies.pyglet as pyglet
 
 window = pyglet.window.Window()
 robot = pyglet.image.load('robot.jpg')

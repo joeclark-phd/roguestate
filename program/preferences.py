@@ -3,7 +3,7 @@
 Pre-loads user preferences from plain-text info files.
 """
 
-import pyglet
+import dependencies.pyglet as pyglet
 pyglet.resource.path = ['program/resources/info','resources/info','program/resources/tiles','resources/tiles']
 from debug import error_log
 import sys

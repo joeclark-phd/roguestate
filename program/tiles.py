@@ -5,7 +5,7 @@ specified characters and fg/bg colors.  Reads data from plain-text info files.
 """
 
 import preferences
-import pyglet
+import dependencies.pyglet as pyglet
 pyglet.resource.path = ['program/resources/info','resources/info','program/resources/tiles','resources/tiles']
 import re # for regular expressions
 RGBcolor = re.compile("[0-9a-f]{6}")  # regular expression for a 6 digit hexadecimal number
