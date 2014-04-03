@@ -1,6 +1,6 @@
 import preferences # this first import will load the user's preferences from prefs.txt
 import tiles # this is the first import of tiles.py so it will take some time initializing graphics
-import widgets
+import widgets, viewport, worldgen
 import pyglet
 from pyglet.window import key
 
@@ -81,9 +81,6 @@ class GameWindow( pyglet.window.Window ):
 
 
 
-# GAME MODES: Each of these extends the GameMode class and represents a display routine (the draw() method)
-# and some input-output handlers.  GameModes may be stacked (e.g. a menu or dialog can "pop up" over the
-# regular game map/display) or they may be replaced (e.g. when player goes to an info screen).
 
 class GameMode():
     """
@@ -126,7 +123,8 @@ class MainMenu(GameMode):
         if symbol == key.ENTER:
             if self._menu.selection == 0:
                 print("starting new game.")
-                self._window.change_bottom_mode(MapInterface(self._window,self._game))
+                newgamedata = worldgen.gen_world()
+                self._window.change_bottom_mode(MapInterface(self._window,newgamedata))
             if self._menu.selection == 1:
                 print("viewing high scores.")
             if self._menu.selection == 2:
@@ -141,26 +139,80 @@ class MapInterface(GameMode):
     # will display main game interface
     def __init__(self, *args):
         GameMode.__init__(self, *args)
-        self._adventurer = pyglet.sprite.Sprite( tiles.tiles["adventurer"],x=gwindow.width//2,y=gwindow.height//2 )
-
+        self._sidebar_width = 20 # how wide is the sidebar of messages/options on the right
+        self._sidebar_on = True # display the sidebar or hide it?
+        self._bottombar_on = False
+        self._lay_out(gwindow.width,gwindow.height)
+        self._view = viewport.Viewport(self._game.level(),x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1],visible_rows=self._renderbox_dims[1],visible_cols=self._renderbox_dims[0],corner_col=20,corner_row=20)
+        self._title = tiles.generate_sprite_string("this is the normal game map",self._messagebar_corner[0],self._messagebar_corner[1],self._batch,alphabet=1)
+        #self._adventurer = pyglet.sprite.Sprite( tiles.tiles["adventurer"],x=gwindow.width//2,y=gwindow.height//2 )
+    def _lay_out(self,width,height):
+        #figure out where everything goes
+        maxcols = width//tiles.tilewidth
+        maxrows = height//tiles.tileheight
+        xmargin = (width-(maxcols*tiles.tilewidth)) // 2  # half of the fractional tilewidth remainder is the margin on the left
+        ymargin = (height-(maxrows*tiles.tileheight)) // 2  # the margin on the bottom
+        # PARTS OF THE SCREEN:
+        #   leftborder: a 1 tile wide strip of border tiles on the left
+        #   rightborder: a 1 tile wide strip of border tiles on the left
+        #   topborder: a 1 tile high strip of border tiles on top
+        #   bottomborder: a 1 tile high strip of border tiles on bottom
+        #   messagebar: a 1 tile high bar above the bottomborder that will display messages
+        #   bottom2border: a 1 tile high strip of border tiles above the messagebar and below the following:
+        #       renderbox: the viewport within which the map will be rendered; abuts the leftborder, bottomborder, and topborder.
+        #       right2border: an optional vertical strip of border tiles between the renderbox and the sidebar
+        #       sidebar: an optional [20] tile wide box for options/information/etc to the right of right2border and left of rightborder
+        self._leftborder_corner = (xmargin,ymargin)
+        self._leftborder_dims = (1,maxrows)
+        self._rightborder_corner = ( xmargin+((maxcols-1)*tiles.tilewidth) , ymargin )
+        self._rightborder_dims = (1,maxrows)
+        self._bottomborder_corner = (xmargin,ymargin)
+        self._bottomborder_dims = (maxcols,1)
+        self._topborder_corner = ( xmargin , ymargin+((maxrows-1)*tiles.tileheight) )
+        self._topborder_dims = (maxcols,1)
+        self._messagebar_corner = ( (xmargin+tiles.tilewidth) , (ymargin+tiles.tileheight) )
+        self._messagebar_dims = (maxcols-2,1)
+        self._bottom2border_corner = ( xmargin , ymargin+(2*tiles.tileheight) )
+        self._bottom2border_dims = (maxcols,1)
+        self._renderbox_corner = ( (xmargin+tiles.tilewidth) , (ymargin+(3*tiles.tileheight)) )
+        if self._sidebar_on:
+            self._renderbox_dims = ( maxcols-3-self._sidebar_width, maxrows-4 )
+            self._right2border_corner = ( (xmargin+((maxcols-2-self._sidebar_width)*tiles.tilewidth)), (ymargin+(3*tiles.tileheight)) )
+            self._right2border_dims = ( 1, maxrows-4 )
+            self._sidebar_corner = ( (xmargin+((maxcols-1-self._sidebar_width)*tiles.tilewidth)), (ymargin+(3*tiles.tileheight)) )
+            self._sidebar_dims = ( self._sidebar_width, maxrows-4 )
+        else:
+            self._renderbox_dims = ( maxcols-2, maxrows-4 )
+            #no right2border
+            #no sidebar
     def on_key_press(self,symbol,modifiers):
         if symbol == key.ESCAPE:
             print("showing ESC menu.")
             self._window.push_mode(ESCMenu(self._window,self._game))
         if symbol == key.TAB:
             print("showing look cursor.")
-        # catch directional controls
+            self._window.push_mode(LookCursor(self._view,self._window,self._game))
+        if symbol == key.I:  # (i)nfo-panel
+            print("showing/hiding sidebar.")
+            self._sidebar_on = 1 - self._sidebar_on  # toggle True/False value
+            self._lay_out(self._window.width,self._window.height)
+            self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
         if symbol in direction_keys:
             v,h = direction_keys[symbol] # the sign (or zero) of vertical/horizontal movement
             multiplier = 3 # the default scroll speed
             if modifiers & key.MOD_SHIFT: multiplier = 10
             if modifiers & key.MOD_CTRL: multiplier = 1
-            print('moving by %sX, %sY' % (h*multiplier, v*multiplier))
+            self._view.move_view(v*multiplier,h*multiplier)
         return True
     def on_resize(self,width,height):
-        print('Window resized to %s x %s' % (width, height))
+        self._lay_out(self._window.width,self._window.height)
+        self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
+        # TODO move sidebar
+        # TODO move messagebar
     def on_draw(self):
-        self._adventurer.draw()
+        self._view.render()
+        self._view.draw()
+        #self._adventurer.draw()
 
 class ESCMenu(GameMode):
     # will display ESC menu
@@ -190,6 +242,28 @@ class ESCMenu(GameMode):
     def on_draw(self):
         self._menu.draw()
 
+class LookCursor(GameMode):
+    # take over the directional controls to move a cursor around the screen
+    # display what is "seen" in the bottom bar
+    def __init__(self, view, *args):
+        GameMode.__init__(self, *args)
+        self._view = view
+        self._view.init_cursor()  # make a cursor visible at the default position
+        self._game.look(self._view.cursor_tilenum())
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.TAB:
+            print("closing look mode.")
+            self._view.destroy_cursor()
+            self._window.pop_mode()
+            return True
+        if symbol in direction_keys:
+            v,h = direction_keys[symbol] # the sign (or zero) of vertical/horizontal movement
+            multiplier = 1 # the default scroll speed
+            if modifiers & key.MOD_SHIFT: multiplier = 10
+            self._view.move_cursor(v*multiplier,h*multiplier)
+            self._game.look(self._view.cursor_tilenum())
+            return True # do not let direction keys cascade to the underlying mode
+        # no general "return True" so this mode only intercepts the specified key presses. other key presses will go to the underlying mode.
 
 
 

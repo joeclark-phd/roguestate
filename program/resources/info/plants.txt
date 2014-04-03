@@ -1,0 +1,13 @@
+# Describes plants. Format:
+#   PLANT : SYMBOL : COLOR : [TAG] + [TAG] + [TAG]
+# At world-generation time, plant types will be shuffled.
+# Plant, symbol, and tags will stay together. 
+# Description and color will go together.
+# Other characteristics will be procedurally generated.
+
+# plants
+
+indigo bush : indigo bush : [fruit]
+blackroot : blackroot : [edible]
+wiggly weed : wiggly weed : [grass] + [brew]
+goldencorn : goldencorn : [flour]
