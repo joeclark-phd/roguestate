@@ -28,6 +28,11 @@ class AbstractGeometry:
     def tilecount(self):
         # return the number of tiles
         return self.num_tiles
+        pass
+    def randomtile(self):
+        # pick a tile at random
+        import random
+        return random.randrange(self.num_tiles)
     def viewport(self,*args):
         # return the set of tile numbers visible given the arguments
         pass

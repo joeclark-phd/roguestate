@@ -9,7 +9,7 @@
 #   defaults: the "empty" character, foreground white, background black.
 
 
-adventurer = 64 : gold : no_bg
+adventurer = 64 : red : ffffff88
 cursor = 254 : no_bg : highlight
 menucursor = 62 : highlight : bg
 grassland = 255 :  : lightgrass

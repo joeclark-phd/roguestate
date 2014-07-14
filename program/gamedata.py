@@ -55,8 +55,22 @@ class GameData:
         output = [s.name() for s in seen]
         print(output)
         
+    def init_player_at(self,tilenum):
+        # TODO: create a player and initialize him at the tile specified
+        self._player = Player(tilenum);
+        self._level.place_critter(self._player,tilenum)
+        # player is on the map but NOT appended to the self._critters list
         
-
+    def player(self):
+        return self._player
+        
+    def move_player(self, direction):
+        origin = self.player()._location
+        move_to_tile = self._level._geom.adjacent( origin , direction)
+        if move_to_tile is not None:            
+            self._level.remove_critter( self._player, origin )
+            self._level.place_critter( self._player, move_to_tile )
+            self.player()._location = move_to_tile
 
 
 
@@ -100,11 +114,20 @@ class Level:
     def place_critter(self,critter,tile): # put a critter into a place on the level (doesn't actually create it)
         self._critters_at[tile].append(critter) # "stack" a critter
         self.critter_changes.add(tile) # signal a change
-
+    def remove_critter(self,critter,tile): # remove the critter from its current tile
+        self._critters_at[tile].remove(critter)
+        self.critter_changes.add(tile) # signal a change
         
         
         
-        
+class Player:
+    # the '@' player character
+    def __init__(self,tilenum):
+        self._location = tilenum
+    def image(self):
+        return tiles.tiles["adventurer"]
+    def name(self):
+        return "our hero"
        
 
 class Grass:

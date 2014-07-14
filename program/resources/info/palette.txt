@@ -24,6 +24,9 @@
     plaintext = ffffff
     highlight = ffbb00
 
+# critter colors
+    red = ff0000
+    
 # terrain colors
     darkgrass = 668822
     lightgrass = 99cc33

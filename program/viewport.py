@@ -102,8 +102,44 @@ class Viewport:
                 x,y = self._level.geometry().raw_xy(t,tiles.tilewidth,tiles.tileheight)
                 x += self._x_margin + self._x_offset
                 y += self._y_margin + self._y_offset
-                self._crittertiles[t] = pyglet.sprite.Sprite( tiles.get_char_tile(ord(critter.icon()),alphabet=0), x, y, batch=self._batch, group=self._critter_group )
+                self._crittertiles[t] = pyglet.sprite.Sprite( critter.image(), x, y, batch=self._batch, group=self._critter_group )
+        
+    
+    
+    def within_rightmargin(self,tilenum,happy=5):
+        """
+        checks if the player is close to the right edge of the map
+        """
+        col = self._level._geom.col(tilenum)
+        if (self._level.geometry().cols() - col) < happy: return True
+        else: return False
 
+    def within_leftmargin(self,tilenum,happy=5):
+        """
+        checks if the player is close to the left edge of the map
+        """
+        col = self._level._geom.col(tilenum)
+        if col < happy: return True
+        else: return False
+
+    def within_topmargin(self,tilenum,happy=5):
+        """
+        checks if the player is close to the top edge of the map
+        """
+        row = self._level._geom.row(tilenum)
+        if (self._level.geometry().rows() - row) < happy: return True
+        else: return False
+
+    def within_bottommargin(self,tilenum,happy=5):
+        """
+        checks if the player is close to the bottom edge of the map
+        """
+        row = self._level._geom.row(tilenum)
+        if row < happy: return True
+        else: return False
+        
+    
+                
     def move_view(self,row_move,col_move):
         "move the viewport by an increment, if possible"
 
@@ -119,6 +155,25 @@ class Viewport:
             self.relocate_view( self._corner_row + row_move, self._corner_col + col_move )
             return True
 
+            
+    def center_view(self, tilenum):
+        "move the viewport as best as possible to center on a specific cell"
+        center_row = self._level.geometry().row(tilenum)
+        center_col = self._level.geometry().col(tilenum)
+        
+        # cannot be too far down and left
+        new_corner_row = max( 0, center_row - (self._visible_rows//2) )
+        new_corner_col = max( 0, center_col - (self._visible_cols//2) )
+            
+        # cannot be too far up and right
+        new_corner_row = min( new_corner_row, self._level.geometry().rows() - self._visible_rows )        
+        new_corner_col = min( new_corner_col, self._level.geometry().cols() - self._visible_cols )
+        
+       
+        self.relocate_view( new_corner_row, new_corner_col )
+        
+        
+            
     def relocate_view(self,corner_row,corner_col):
         "move the viewport to a specific corner cell"
         
@@ -223,13 +278,16 @@ class Viewport:
         # TODO: finally,if there's a cursor active, and it's not in the new viewport, move the view.
         self.check_cursor_outofbounds()
 
-    def init_cursor(self,image=tiles.tiles["cursor"]):
+    def init_cursor(self,image=tiles.tiles["cursor"],tilenum=None):
         "creates a cursor at the default location, i.e. not remembering where it was before"
         # default location is the center of the visible viewport:
-        xcenter = self._corner_row + (self._visible_rows//2)
-        ycenter = self._corner_col + (self._visible_cols//2)
+        if tilenum:
+            rcenter, ccenter = self._level.geometry().row(tilenum), self._level.geometry().col(tilenum)
+        else:
+            rcenter = self._corner_row + (self._visible_rows//2)
+            ccenter = self._corner_col + (self._visible_cols//2)
         # draw cursor at the tile number of the center tile in the current view
-        self._cursor_tilenum = self._level.geometry().tile_at_coords(xcenter,ycenter)
+        self._cursor_tilenum = self._level.geometry().tile_at_coords(rcenter,ccenter)
         # make the cursor
         self._cursor = pyglet.sprite.Sprite( image, x=0, y=0, batch=self._batch, group=self._cursor_group )
         self.adjust_cursor()

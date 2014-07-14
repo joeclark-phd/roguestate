@@ -1,6 +1,6 @@
 import preferences # this first import will load the user's preferences from prefs.txt
 import tiles # this is the first import of tiles.py so it will take some time initializing graphics
-import widgets, viewport, worldgen
+import widgets, viewport, worldgen, geometry
 import pyglet
 from pyglet.window import key
 
@@ -145,7 +145,11 @@ class MapInterface(GameMode):
         self._lay_out(gwindow.width,gwindow.height)
         self._view = viewport.Viewport(self._game.level(),x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1],visible_rows=self._renderbox_dims[1],visible_cols=self._renderbox_dims[0],corner_col=20,corner_row=20)
         self._title = tiles.generate_sprite_string("this is the normal game map",self._messagebar_corner[0],self._messagebar_corner[1],self._batch,alphabet=1)
-        #self._adventurer = pyglet.sprite.Sprite( tiles.tiles["adventurer"],x=gwindow.width//2,y=gwindow.height//2 )
+        
+        self._view.render()
+        print("centering on player")
+        self._view.center_view( self._game.player()._location )
+
     def _lay_out(self,width,height):
         #figure out where everything goes
         maxcols = width//tiles.tilewidth
@@ -198,11 +202,15 @@ class MapInterface(GameMode):
             self._lay_out(self._window.width,self._window.height)
             self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
         if symbol in direction_keys:
-            v,h = direction_keys[symbol] # the sign (or zero) of vertical/horizontal movement
-            multiplier = 3 # the default scroll speed
-            if modifiers & key.MOD_SHIFT: multiplier = 10
-            if modifiers & key.MOD_CTRL: multiplier = 1
-            self._view.move_view(v*multiplier,h*multiplier)
+            # but we do need to move the map, so...
+            v,h =  direction_keys[symbol] 
+            if self._view.within_topmargin( self._game.player()._location ): v = max( 0, v )
+            if self._view.within_bottommargin( self._game.player()._location ): v = min( 0, v )
+            if self._view.within_rightmargin( self._game.player()._location ): h = max( 0, h )
+            if self._view.within_leftmargin( self._game.player()._location ): h = min( 0, h )
+            self._view.move_view( v, h )
+            # this replaces the former functionality which simply allowed the player to scroll around the map without using the "look" function
+            self._game.move_player( direction_key_directions[symbol] )
         return True
     def on_resize(self,width,height):
         self._lay_out(self._window.width,self._window.height)
@@ -248,7 +256,7 @@ class LookCursor(GameMode):
     def __init__(self, view, *args):
         GameMode.__init__(self, *args)
         self._view = view
-        self._view.init_cursor()  # make a cursor visible at the default position
+        self._view.init_cursor(tilenum=self._game.player()._location)  # make a cursor visible at the default position
         self._game.look(self._view.cursor_tilenum())
     def on_key_press(self, symbol, modifiers):
         if symbol == key.TAB:
@@ -275,6 +283,25 @@ direction_keys = { key.RIGHT:(0,1), key.NUM_6:(0,1), key.PAGEUP:(1,1), key.NUM_9
                    key.NUM_8:(1,0), key.HOME:(1,-1), key.NUM_7:(1,-1), key.LEFT:(0,-1), key.NUM_4:(0,-1),
                    key.END:(-1,-1), key.NUM_1:(-1,-1),key.DOWN:(-1,0), key.NUM_2:(-1,0), key.PAGEDOWN:(-1,1),
                    key.NUM_3:(-1,1) }
+
+# FOR CONVENIENCE
+# a dictionary of direction keys and their correspondent vertical/horizontal components
+direction_key_directions = { key.RIGHT: geometry.AbstractGeometry.EAST, 
+                             key.NUM_6: geometry.AbstractGeometry.EAST,
+                             key.PAGEUP: geometry.AbstractGeometry.NE, 
+                             key.NUM_9: geometry.AbstractGeometry.NE, 
+                             key.UP: geometry.AbstractGeometry.NORTH,
+                             key.NUM_8: geometry.AbstractGeometry.NORTH, 
+                             key.HOME: geometry.AbstractGeometry.NW, 
+                             key.NUM_7: geometry.AbstractGeometry.NW, 
+                             key.LEFT: geometry.AbstractGeometry.WEST, 
+                             key.NUM_4: geometry.AbstractGeometry.WEST,
+                             key.END: geometry.AbstractGeometry.SW, 
+                             key.NUM_1: geometry.AbstractGeometry.SW,
+                             key.DOWN: geometry.AbstractGeometry.SOUTH, 
+                             key.NUM_2: geometry.AbstractGeometry.SOUTH, 
+                             key.PAGEDOWN: geometry.AbstractGeometry.SE,
+                             key.NUM_3: geometry.AbstractGeometry.SE }
 
 
 

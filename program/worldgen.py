@@ -11,7 +11,10 @@ def gen_world():
     gdata = gamedata.GameData( geometry.Rectangle8(100,100), gamedata.Grass() )         
     for i in range(1000):
         # generate a thousand shrubberies
-        gdata.create_thing( random.choice(planttypes),tile=random.randint(0,gdata.level().geometry().tilecount()-1))
+        gdata.create_thing( random.choice(planttypes),tile=gdata.level().geometry().randomtile() )
+	
+	#pick a random tile for the player and tell the GameData to initialize him there
+    gdata.init_player_at(gdata.level().geometry().randomtile())
     return gdata
     
 def generate_plantlife():
