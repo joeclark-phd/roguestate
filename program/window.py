@@ -196,11 +196,15 @@ class MapInterface(GameMode):
         if symbol == key.TAB:
             print("showing look cursor.")
             self._window.push_mode(LookCursor(self._view,self._window,self._game))
+        if symbol == key.C:  # (c)enter map on player
+            print("centering map on player.")
+            self._view.center_view( self._game.player()._location )# re-center on player
         if symbol == key.I:  # (i)nfo-panel
             print("showing/hiding sidebar.")
             self._sidebar_on = 1 - self._sidebar_on  # toggle True/False value
             self._lay_out(self._window.width,self._window.height)
             self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
+            self._view.center_view( self._game.player()._location )# re-center on player
         if symbol in direction_keys:
             if self._game.move_player( direction_key_directions[symbol] ):
                 # returns true if move was successful, false if blocked by object, terrain, or edge of map.

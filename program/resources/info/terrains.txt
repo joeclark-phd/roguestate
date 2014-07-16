@@ -1,0 +1,9 @@
+# Describes terrains. Format:
+#   TERRAIN : TILE : COLOR : [TAG] + [TAG] + [TAG]
+
+
+# terrain
+
+brick wall : brickwall : [impassable] + [built]
+green grass : grassland : [soft]
+tile floor : tile : [hard] + [built]

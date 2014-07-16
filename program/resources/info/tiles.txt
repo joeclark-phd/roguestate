@@ -12,10 +12,11 @@
 adventurer = 64 : red : ddddddff
 cursor = 255 : no_bg : ffffff88
 menucursor = 62 : highlight : bg
-grassland = 255 :  : lightgrass
-shrubbery = 240 : darkgrass : no_bg
-stonewall = 35 : 731d1d : lightgrass
 
+# terrain
+grassland = 255 :  : lightgrass
+brickwall = 35 : cc0000 : 731d1d
+tile = 43 : cccc99 : ffffcc
 
 # plants
 indigo bush = 37 : indigo : no_bg

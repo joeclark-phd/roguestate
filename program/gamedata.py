@@ -155,7 +155,7 @@ class Grass:
 class Wall:
     _tags = ["impassable"]
     def image(self):
-        return tiles.tiles["stonewall"]
+        return tiles.tiles["brickwall"]
     def name(self):
         return "a stone wall"
 
@@ -169,6 +169,17 @@ class Shrubbery:
 
 class PlantType:
     # a type of plant: contains the tile/image as well as the plant type's properties
+    def __init__(self,name,tile,tags):
+        self._name = name
+        self._tile = tile
+        self._tags = tags
+    def name(self):
+        return self._name
+    def image(self):
+        return self._tile
+
+class TerrainType:
+    # a type of terrain: contains the tile/image as well as the terrain type's properties
     def __init__(self,name,tile,tags):
         self._name = name
         self._tile = tile

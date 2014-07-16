@@ -131,8 +131,14 @@ class Rectangle8(AbstractGeometry):
             return self.coords_to_tile[ (row,col) ]
         else:
             return False
-        
-        
+    def rectangle(self,origin,height,width):
+        # return the set of tiles in a rectangle starting at a particular corner
+        tiles = []
+        for i in range(height):
+            for j in range(width):
+                t = (self.tile_at_coords(self.row(origin)+i,self.col(origin)+j))
+                if t: tiles.append(t)
+        return tiles
 
 
 

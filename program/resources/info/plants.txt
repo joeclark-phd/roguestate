@@ -7,7 +7,5 @@
 
 # plants
 
-indigo bush : indigo bush : [fruit]
-blackroot : blackroot : [edible]
+
 wiggly weed : wiggly weed : [grass] + [brew]
-goldencorn : goldencorn : [flour]
