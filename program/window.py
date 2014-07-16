@@ -202,21 +202,22 @@ class MapInterface(GameMode):
             self._lay_out(self._window.width,self._window.height)
             self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
         if symbol in direction_keys:
-            # but we do need to move the map, so...
-            v,h =  direction_keys[symbol] 
-            if self._view.within_topmargin( self._game.player()._location ): v = max( 0, v )
-            if self._view.within_bottommargin( self._game.player()._location ): v = min( 0, v )
-            if self._view.within_rightmargin( self._game.player()._location ): h = max( 0, h )
-            if self._view.within_leftmargin( self._game.player()._location ): h = min( 0, h )
-            self._view.move_view( v, h )
-            # this replaces the former functionality which simply allowed the player to scroll around the map without using the "look" function
-            self._game.move_player( direction_key_directions[symbol] )
+            if self._game.move_player( direction_key_directions[symbol] ):
+                # returns true if move was successful, false if blocked by object, terrain, or edge of map.
+                # scroll the map if the move occurred and the player isn't moving out of a margin.
+                v,h =  direction_keys[symbol] 
+                if self._view.within_topmargin( self._game.player()._location ): v = max( 0, v )
+                if self._view.within_bottommargin( self._game.player()._location ): v = min( 0, v )
+                if self._view.within_rightmargin( self._game.player()._location ): h = max( 0, h )
+                if self._view.within_leftmargin( self._game.player()._location ): h = min( 0, h )
+                self._view.move_view( v, h )
         return True
     def on_resize(self,width,height):
         self._lay_out(self._window.width,self._window.height)
         self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
         # TODO move sidebar
         # TODO move messagebar
+        self._view.center_view( self._game.player()._location )# re-center on player
     def on_draw(self):
         self._view.render()
         self._view.draw()

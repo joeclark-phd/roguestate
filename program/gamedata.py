@@ -35,6 +35,10 @@ class GameData:
     def level(self):
         return self._level
         
+    def create_terrain(self,terrain,tile):
+        #add a new piece of terrain (such as a wall tile) to the map
+        self._level.place_terrain(terrain,tile) # place the terrain tile on the map
+        
     def create_thing(self,thing,critter=None,tile=None):
         #add a new inanimate object to the game: specify either a critter's inventory or a map tile
         self._things.append(thing)
@@ -67,11 +71,17 @@ class GameData:
     def move_player(self, direction):
         origin = self.player()._location
         move_to_tile = self._level._geom.adjacent( origin , direction)
-        if move_to_tile is not None:            
+        if move_to_tile is None:
+            print("can't move off map")
+            return False
+        elif "impassable" in self._level.terrain(move_to_tile)._tags:
+            print("can't move into impassable tile")
+            return False
+        else:
             self._level.remove_critter( self._player, origin )
             self._level.place_critter( self._player, move_to_tile )
             self.player()._location = move_to_tile
-
+            return True
 
 
 
@@ -108,6 +118,9 @@ class Level:
     def top_critter_at(self,tile):
         if len(self._critters_at[tile]): return self._critters_at[tile][-1]
         else: return None # if item stack for tile is empty
+    def place_terrain(self,terrain,tile): # replace the default terrain with a new terrain type at a particular tile
+        self._terrains[tile] = terrain
+        self.terrain_changes.add(tile) # signal a change
     def place_thing(self,thing,tile): # put a thing into a place on the level (doesn't actually create it)
         self._things_at[tile].append(thing) # "stack" a thing
         self.thing_changes.add(tile) # signal a change
@@ -132,10 +145,20 @@ class Player:
 
 class Grass:
     # an example of a terraintype (in the real game the types should be loaded from a text file and made into objects at runtime)
+    _tags = []
     def image(self):
         return tiles.tiles["grassland"]
     def name(self):
         return "a patch of grass"
+
+        
+class Wall:
+    _tags = ["impassable"]
+    def image(self):
+        return tiles.tiles["stonewall"]
+    def name(self):
+        return "a stone wall"
+
 
 class Shrubbery:
     # an example of a thing (in the real game the types should be loaded from a text file and made into objects at runtime)

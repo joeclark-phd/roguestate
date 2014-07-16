@@ -9,12 +9,12 @@
 #   defaults: the "empty" character, foreground white, background black.
 
 
-adventurer = 64 : red : ffffff88
-cursor = 254 : no_bg : highlight
+adventurer = 64 : red : ddddddff
+cursor = 255 : no_bg : ffffff88
 menucursor = 62 : highlight : bg
 grassland = 255 :  : lightgrass
 shrubbery = 240 : darkgrass : no_bg
-
+stonewall = 35 : 731d1d : lightgrass
 
 
 # plants

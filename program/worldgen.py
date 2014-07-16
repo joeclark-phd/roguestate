@@ -8,10 +8,17 @@ import sys
 
 def gen_world():
     planttypes = generate_plantlife()
-    gdata = gamedata.GameData( geometry.Rectangle8(100,100), gamedata.Grass() )         
+    gdata = gamedata.GameData( geometry.Rectangle8(100,100), gamedata.Grass() )
+    for i in range(500):
+        # generate random wall tiles
+        gdata.create_terrain( gamedata.Wall(), tile=gdata.level().geometry().randomtile() )
+
+    
     for i in range(1000):
         # generate a thousand shrubberies
-        gdata.create_thing( random.choice(planttypes),tile=gdata.level().geometry().randomtile() )
+        t = gdata.level().geometry().randomtile()
+        if not "impassable" in gdata.level().terrain(t)._tags:
+            gdata.create_thing( random.choice(planttypes),tile=t )
 	
 	#pick a random tile for the player and tell the GameData to initialize him there
     gdata.init_player_at(gdata.level().geometry().randomtile())
