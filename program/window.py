@@ -144,11 +144,10 @@ class MapInterface(GameMode):
         self._bottombar_on = False
         self._lay_out(gwindow.width,gwindow.height)
         self._view = viewport.Viewport(self._game.level(),x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1],visible_rows=self._renderbox_dims[1],visible_cols=self._renderbox_dims[0],corner_col=20,corner_row=20)
-        self._title = tiles.generate_sprite_string("this is the normal game map",self._messagebar_corner[0],self._messagebar_corner[1],self._batch,alphabet=1)
-        
+        self._messagebatch = pyglet.graphics.Batch()
         self._view.render()
-        print("centering on player")
         self._view.center_view( self._game.player()._location )
+        self.flash("this is the normal game map")
 
     def _lay_out(self,width,height):
         #figure out where everything goes
@@ -189,25 +188,32 @@ class MapInterface(GameMode):
             self._renderbox_dims = ( maxcols-2, maxrows-4 )
             #no right2border
             #no sidebar
+    def flash(self,message):
+        "print a message to the message bar"
+        self._messagebatch = pyglet.graphics.Batch(); #clear existing message
+        message = message[0:self._messagebar_dims[0]]
+        self._message = tiles.generate_sprite_string(message,self._messagebar_corner[0],self._messagebar_corner[1],self._messagebatch,alphabet=1)
+        print (message)
+        
     def on_key_press(self,symbol,modifiers):
         if symbol == key.ESCAPE:
-            print("showing ESC menu.")
+            self.flash("showing ESC menu.")
             self._window.push_mode(ESCMenu(self._window,self._game))
         if symbol == key.TAB:
-            print("showing look cursor.")
+            self.flash("showing look cursor.")
             self._window.push_mode(LookCursor(self._view,self._window,self._game))
         if symbol == key.C:  # (c)enter map on player
-            print("centering map on player.")
+            self.flash("centering map on player.")
             self._view.center_view( self._game.player()._location )# re-center on player
         if symbol == key.I:  # (i)nfo-panel
-            print("showing/hiding sidebar.")
+            self.flash("showing/hiding sidebar.")
             self._sidebar_on = 1 - self._sidebar_on  # toggle True/False value
             self._lay_out(self._window.width,self._window.height)
             self._view.resize_view(new_rows=self._renderbox_dims[1],new_cols=self._renderbox_dims[0],x_margin=self._renderbox_corner[0],y_margin=self._renderbox_corner[1])
             self._view.center_view( self._game.player()._location )# re-center on player
         if symbol in direction_keys:
-            if self._game.move_player( direction_key_directions[symbol] ):
-                # returns true if move was successful, false if blocked by object, terrain, or edge of map.
+            move = self._game.move_player( direction_key_directions[symbol] )
+            if move[0]: # true or false signal
                 # scroll the map if the move occurred and the player isn't moving out of a margin.
                 v,h =  direction_keys[symbol] 
                 if self._view.within_topmargin( self._game.player()._location ): v = max( 0, v )
@@ -215,6 +221,7 @@ class MapInterface(GameMode):
                 if self._view.within_rightmargin( self._game.player()._location ): h = max( 0, h )
                 if self._view.within_leftmargin( self._game.player()._location ): h = min( 0, h )
                 self._view.move_view( v, h )
+            if len(move)>1: self.flash(move[1]) # message from move function to flash (whether successful or not)
         return True
     def on_resize(self,width,height):
         self._lay_out(self._window.width,self._window.height)
@@ -225,6 +232,7 @@ class MapInterface(GameMode):
     def on_draw(self):
         self._view.render()
         self._view.draw()
+        self._messagebatch.draw()
         #self._adventurer.draw()
 
 class ESCMenu(GameMode):
@@ -234,7 +242,7 @@ class ESCMenu(GameMode):
         self._menu = widgets.GraphicalMenu("never mind","quit",xcenter=gwindow.width//2,ycenter=gwindow.height//2)
     def on_key_press(self,symbol,modifiers):
         if symbol == key.ESCAPE:
-            print("closing ESC menu.")
+            self._window._modes[0].flash("closing ESC menu.")
             self._window.pop_mode()
             return True
         if symbol in { key.UP, key.NUM_8 }:
@@ -245,10 +253,10 @@ class ESCMenu(GameMode):
             return True
         if symbol == key.ENTER:
             if self._menu.selection == 0:
-                print("closing ESC menu.")
+                self._window._modes[0].flash("closing ESC menu.")
                 self._window.pop_mode()
             if self._menu.selection == 1:
-                print("exiting game.")
+                self._window._modes[0].flash("exiting game.")
                 pyglet.app.exit()
             return True
         return True # this mode should intercept ALL key presses
@@ -265,7 +273,7 @@ class LookCursor(GameMode):
         self._game.look(self._view.cursor_tilenum())
     def on_key_press(self, symbol, modifiers):
         if symbol == key.TAB:
-            print("closing look mode.")
+            self._window._modes[0].flash("closing look mode.")
             self._view.destroy_cursor()
             self._window.pop_mode()
             return True
@@ -274,7 +282,7 @@ class LookCursor(GameMode):
             multiplier = 1 # the default scroll speed
             if modifiers & key.MOD_SHIFT: multiplier = 10
             self._view.move_cursor(v*multiplier,h*multiplier)
-            self._game.look(self._view.cursor_tilenum())
+            self._window._modes[0].flash( self._game.look(self._view.cursor_tilenum()) )
             return True # do not let direction keys cascade to the underlying mode
         # no general "return True" so this mode only intercepts the specified key presses. other key presses will go to the underlying mode.
 

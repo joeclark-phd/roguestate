@@ -56,8 +56,8 @@ class GameData:
         #return a list of objects at a tile in the order they are "seen" (i.e. top to bottom)
         #print("looking at",tilenum)
         seen = self._level._critters_at[tilenum][::-1] + self._level._things_at[tilenum][::-1] + [self._level._terrains[tilenum]]
-        output = [s.name() for s in seen]
-        print(output)
+        output = ", ".join( [s.name() for s in seen] )
+        return output
         
     def init_player_at(self,tilenum):
         # TODO: create a player and initialize him at the tile specified
@@ -72,16 +72,14 @@ class GameData:
         origin = self.player()._location
         move_to_tile = self._level._geom.adjacent( origin , direction)
         if move_to_tile is None:
-            print("can't move off map")
-            return False
+            return [False,"can't move off map"]
         elif "impassable" in self._level.terrain(move_to_tile)._tags:
-            print("can't move into impassable tile")
-            return False
+            return [False,"can't move into impassable tile"]
         else:
             self._level.remove_critter( self._player, origin )
             self._level.place_critter( self._player, move_to_tile )
             self.player()._location = move_to_tile
-            return True
+            return [True]
 
 
 
